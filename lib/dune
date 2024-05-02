@@ -1,3 +1,3 @@
 (library
- (name minilia)
+ (public_name minilia)
  (libraries hashcons z3))
