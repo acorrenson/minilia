@@ -18,6 +18,7 @@ module Var : sig
   type t
   val pp : Format.formatter -> t -> unit
   val make : string -> t
+  val fresh : ?name:string -> unit -> t
 end = struct
   let _counter = ref 0
 
@@ -33,9 +34,11 @@ end = struct
       Format.fprintf fmt "%s_%d" name id
 
   let make (name : string) : t =
-    let id = !_counter in
+    { id = 0; name }
+
+  let fresh ?(name = "fresh") () : t =
     incr _counter;
-    { id; name }
+    { id = !_counter; name }
 end
 
 
