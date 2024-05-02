@@ -93,35 +93,35 @@ let free_vars (e : t) =
 module HTerm = Hashcons.Make(Term)
 let world = HTerm.create 1024
 
-let var v : t =
+let mk_var v : t =
   HTerm.hashcons world (Var v)
 
-let cst c : t =
+let mk_const c : t =
   HTerm.hashcons world (Cst c)
 
-let rec add (e1 : t) (e2 : t) : t =
+let rec mk_add (e1 : t) (e2 : t) : t =
   match e1.node, e2.node with
-  | Cst c1, Cst c2 -> cst (c1 + c2)
-  | Cst _, _ -> add e2 e1
+  | Cst c1, Cst c2 -> mk_const (c1 + c2)
+  | Cst _, _ -> mk_add e2 e1
   | Bop (ADD, e1_lhs, e1_rhs), _ ->
-    add e1_lhs (add e1_rhs e2)
+    mk_add e1_lhs (mk_add e1_rhs e2)
   | _, _ -> HTerm.hashcons world (Bop (ADD, e1, e2))
 
-let sub (e1 : t) (e2 : t) : t =
+let mk_sub (e1 : t) (e2 : t) : t =
   match e1.node, e2.node with
-  | Cst c1, Cst c2 -> cst (c1 - c2)
+  | Cst c1, Cst c2 -> mk_const (c1 - c2)
   | _, _ -> HTerm.hashcons world (Bop (SUB, e1, e2))
 
-let rec mul (e1 : t) (e2 : t) : t =
+let rec mk_mul (e1 : t) (e2 : t) : t =
   match e1.node, e2.node with
-  | Cst c1, Cst c2 -> cst (c1 * c2)
-  | Cst _, _ -> mul e2 e1
+  | Cst c1, Cst c2 -> mk_const (c1 * c2)
+  | Cst _, _ -> mk_mul e2 e1
   | Bop (ADD, e1_lhs, e1_rhs), _ ->
-    mul e1_lhs (mul e1_rhs e2)
+    mk_mul e1_lhs (mk_mul e1_rhs e2)
   | _, _ -> HTerm.hashcons world (Bop (MUL, e1, e2))
 
 let mk_bop (op : Bop.t) (e1 : t) (e2 : t) : t =
   match op with
-  | ADD -> add e1 e2
-  | MUL -> mul e1 e2
-  | SUB -> sub e1 e2
+  | ADD -> mk_add e1 e2
+  | MUL -> mk_mul e1 e2
+  | SUB -> mk_sub e1 e2
